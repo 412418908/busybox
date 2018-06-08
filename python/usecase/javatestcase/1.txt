@@ -1,0 +1,30 @@
+-********-##,x3313,1
+------------##,x3313,1,20
+-********-##,x3313,2
+------------##,x3313,2,20
+-********-##,x3313,3
+------------##,x3313,3,20
+-********-##,x5033,1
+------------##,x5033,1,20
+-********-##,x5033,2
+------------##,x5033,2,20
+-********-##,x5033,3
+------------##,x5033,3,20
+-********-##,A9393,1
+------------##,A9393,1,20
+-********-##,A9393,2
+------------##,A9393,2,20
+-********-##,A9393,3
+------------##,A9393,3,20
+start to work...
+['x3313', 'x5033', 'A9393']
+run thread: java -Xmx4m -classpath /home/test/javatestcase MyTest x3313 1
+run thread: java -Xmx4m -classpath /home/test/javatestcase MyTest x3313 2
+run thread: java -Xmx4m -classpath /home/test/javatestcase MyTest x3313 3
+run thread: java -Xmx4m -classpath /home/test/javatestcase MyTest x5033 1
+run thread: java -Xmx4m -classpath /home/test/javatestcase MyTest x5033 2
+run thread: java -Xmx4m -classpath /home/test/javatestcase MyTest x5033 3
+run thread: java -Xmx4m -classpath /home/test/javatestcase MyTest A9393 1
+run thread: java -Xmx4m -classpath /home/test/javatestcase MyTest A9393 2
+run thread: java -Xmx4m -classpath /home/test/javatestcase MyTest A9393 3
+finished
