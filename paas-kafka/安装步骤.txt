@@ -1,0 +1,51 @@
+https://blog.csdn.net/wuwei928/article/details/80334415
+
+4.1 进入Kafka配置目录配置
+cd /usr/local/kafka/config/
+vi server.properties
+4.2 修改配置
+Kafka的配置信息就是在server.properties里面配置的
+
+找到下面两行代码并进行修改
+
+broker.id=1
+
+zookeeper.connect=192.168.1.91:2181,192.168.1.92:2181,192.168.1.93:2181
+
+listeners = PLAINTEXT://192.168.1.92:9091
+
+4.3 Kafka集群配置
+拷贝Kafka到另外两台服务器然后修改配置
+
+IP：192.168.1.92
+broker.id=2
+zookeeper.connect=192.168.1.91:2181,192.168.1.92:2181,192.168.1.93:2181
+listeners = PLAINTEXT://192.168.1.92:9092
+ 
+
+IP：192.168.1.93
+broker.id=2
+zookeeper.connect=192.168.1.91:2181,192.168.1.92:2181,192.168.1.93:2181
+listeners = PLAINTEXT://192.168.1.92:9093
+ 
+
+五、功能验证
+5.1 开启三台服务的zookeeper
+bin/zookeeper-server-start.sh -daemon config/zookeeper.propertie
+5.2 开启三台服务器的Kafka服务
+bin/kafka-server-start.sh config/server.properties
+5.3 创建topic
+使用kafka-topics.sh 创建单分区单副本的topic test：
+
+bin/kafka-topics.sh --create --zookeeper 192.168.1.92:2181 --replication-factor 1 --partitions 1 --topic test
+查看创建的topic test：
+
+bin/kafka-topics.sh --list --zookeeper 192.168.1.92:2181
+ 5.4 产生消息命令
+使用kafka-console-producer.sh  命令向topic test 发送消息
+
+bin/kafka-console-producer.sh --broker-list 192.168.1.92:9092 --topic test
+5.5 消费消息
+使用kafka-console-consumer.s 命令接受来自topic test的消息
+bin/kafka-console-consumer.sh --zookeeper 192.168.1.92:2181 --topic test --from-beginning
+ 

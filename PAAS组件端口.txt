@@ -1,0 +1,4 @@
+zookeeper:2128
+
+kafka:9092
+

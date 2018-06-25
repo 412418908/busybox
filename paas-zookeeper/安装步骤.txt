@@ -1,0 +1,64 @@
+
+https://www.jianshu.com/p/a79ea43c49bc
+
+配置zoo.conf文件
+首先，将zookeeper-3.4.8这个目录copy三份，分别为zookeeper-3.4.8-01、zookeeper-3.4.8-02、zookeeper-3.4.8-03，代表着3个实例。
+
+然后，分别创建zoo.conf配置文件，放在对应实例下的conf/目录下，文件内容如下：
+
+# The number of milliseconds of each tick
+tickTime=2000
+# The number of ticks that the initial 
+# synchronization phase can take
+initLimit=10
+# The number of ticks that can pass between 
+# sending a request and getting an acknowledgement
+syncLimit=5
+# the directory where the snapshot is stored.
+# do not use /tmp for storage, /tmp here is just 
+# example sakes.
+dataDir=/var/lib/zookeeper-01
+# the port at which the clients will connect
+clientPort=2181
+
+# servers
+server.1=127.0.0.1:2888:3888
+server.2=127.0.0.1:2889:3889
+server.3=127.0.0.1:2890:3890
+# the maximum number of client connections.
+# increase this if you need to handle more clients
+#maxClientCnxns=60
+#
+# Be sure to read the maintenance section of the 
+# administrator guide before turning on autopurge.
+#
+# http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance
+#
+# The number of snapshots to retain in dataDir
+#autopurge.snapRetainCount=3
+# Purge task interval in hours
+# Set to "0" to disable auto purge feature
+#autopurge.purgeInterval=1
+下面说明一下需要注意的几点：
+
+dataDir这个是指定实例数据的存放路径，不同的实例要区分开。并且，注释中提醒不要设置为/tmp目录。比如可以分别设为：
+/var/lib/zookeeper-01
+/var/lib/zookeeper-02
+/var/lib/zookeeper-03
+clientPort这个是供客户端连接本实例的端口号，不同的实例也要区分。比如，可以分别指定为：2181、2182、2183。
+server.{X}这个X可以取数字，用来标识集群中唯一的一个实例。配置了多少个server.{X}就表示集群中有多少个实例。后面值的格式为：{host}:{port1}:{port2}
+其中，{host}为实例所在的主机IP，这里由于都在一台机器上，所以都指定为本机地址；{port1}是集群中实例之间用于数据通信的端口；{port2}是集群中实例进行leader选举时使用的通信端口。对于同一实例{port1}和{port2}是不可相同的。对于同一台机器部署多个实例的情况，不同实例的同一种端口也是需要区分的。
+配置myid文件
+前面提到的server.{X}配置项中的{X}就是一个实例的myid，它需要被写在对应实例的{dataDir}/myid文件中。
+
+下面需要在每一个实例指定的{dateDir}目录下创建一个名为myid的文件，文件的内容就是一个数字，对应server.{X}中的X。
+
+比如，这里是这样配置的：
+在/var/lib/zookeeper-01/myid文件中写入1；
+在/var/lib/zookeeper-02/myid文件中写入2；
+在/var/lib/zookeeper-03/myid文件中写入3。
+
+作者：JohnShen
+链接：https://www.jianshu.com/p/a79ea43c49bc
+來源：简书
+简书著作权归作者所有，任何形式的转载都请联系作者获得授权并注明出处。
