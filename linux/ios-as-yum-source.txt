@@ -1,0 +1,38 @@
+linux下使用iso文件作为yum安装源
+2016年11月21日 18:32:28
+阅读数：6098
+由于单位的研发服务器不能连外网，导致安装某些rpm包时很痛苦，故而总结linux下使用iso文件作为yum源的方法，以方便后续使用~
+
+步骤：
+
+1.将linux系统对应的安装文件（iso文件）拷贝到系统盘中
+
+2.创建挂载路径
+
+mkdir -p  /mnt/iso
+
+3.将iso文件挂载到/mnt/iso
+
+mount -o loop xxxx.iso /mnt/iso
+
+4.如果/etc/yum.repos.d/下面有其它的*.repo文件，先创建个备份文件夹，将这些repo先转移到文件夹中，自己写一个新的.repo的文件
+
+vi /etc/yum.repos.d/file.repo
+
+添加如下内容：
+
+name=rhel6repo
+baseurl=file:///mnt/iso
+enabled=1
+gpgckeck=0
+gpgkey=file:///mnt/iso/RPM-GPG-KEY-redhat-release
+
+5.清除cache
+
+yum clean all
+
+6.验证是否成功
+
+yum -y install tree
+
+tree
