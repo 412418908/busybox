@@ -1,0 +1,49 @@
+
+{
+      "from": 0,
+      "size": 10,
+      "query": {
+      "bool": {
+      "filter": [
+        {
+          "terms": {
+            "goods_id": [
+              "262628158"
+            ],
+            "boost": 1.0
+          }
+        },
+        {
+          "terms": {
+            "status": [
+              "2",
+              "4"
+            ],
+            "boost": 1.0
+          }
+        },
+        {
+          "range": {
+            "create_time": {
+              "from": "1514027649",
+              "to": "1514632449",
+              "include_lower": true,
+              "include_upper": true,
+              "boost": 1.0
+            }
+          }
+        }
+      ],
+      "disable_coord": false,
+      "adjust_pure_negative": true,
+      "boost": 1.0
+    }
+  },
+  "sort": [
+    {
+      "create_time": {
+        "order": "desc"
+      }
+    }
+  ]
+}
