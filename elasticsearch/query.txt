@@ -1,49 +1,69 @@
-
+对应查询DSL：
+GET /table_im-201812*/_search
 {
-      "from": 0,
-      "size": 10,
-      "query": {
-      "bool": {
-      "filter": [
-        {
-          "terms": {
-            "goods_id": [
-              "262628158"
-            ],
-            "boost": 1.0
-          }
-        },
-        {
-          "terms": {
-            "status": [
-              "2",
-              "4"
-            ],
-            "boost": 1.0
-          }
-        },
-        {
-          "range": {
-            "create_time": {
-              "from": "1514027649",
-              "to": "1514632449",
-              "include_lower": true,
-              "include_upper": true,
-              "boost": 1.0
-            }
-          }
+  "query": {
+    "bool": {
+      "must": {
+        "match": {
+          "AUTH_ACCOUNT": "123456"
         }
-      ],
-      "disable_coord": false,
-      "adjust_pure_negative": true,
-      "boost": 1.0
+      },
+      "filter": {
+        "bool": {
+          "must": [
+            {
+              "bool": {
+                "should": [
+                  {"match": {"AUTH_TYPE": "1029999"}},
+                  {"match": {"AUTH_TYPE": "1020008"}}
+                ]
+              }
+            },
+            {
+              "bool": {
+                "should": [
+                  {"match": {"DATA_SOURCE": "111"}},
+                  {"match": {"DATA_SOURCE": "144"}},
+                  {"match": {"DATA_SOURCE": "124"}}
+                ]
+              }
+            }
+          ]
+        }
+      }
     }
   },
   "sort": [
     {
-      "create_time": {
+      "CAPTURE_TIME": {
         "order": "desc"
       }
     }
   ]
 }
+
+
+
+#关键词查询场景推荐查询条件:
+GET nb_tab_im/_search
+{
+  "query": {
+    "bool": {
+      "must": {
+        "match_phrase": {
+          "_all": "123456"
+        }
+      },
+      "filter": {
+        "range": {
+          "CAPTURE_TIME": {
+            "gt":1543593600,
+            "lt": 1544198400
+          }
+        }
+      }
+    }
+  }
+}
+
+
