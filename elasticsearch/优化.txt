@@ -1,0 +1,96 @@
+
+
+1.mapping设计，只将有检索意义的字段加入_all,其它字段默认屏蔽。
+2.mapping设计，只将有统计、排序意义的字段配置docvalue，其它字段默认屏蔽。
+3.并发查询50个，每个并发请求取200条记录，翻页50次，同时可能有2500并发请求。测试客户端网卡打满，导致取记录超时。修改测试程序并发数、取记录条数，测试可以支撑的最大上限。最差情况，1000张表，每张取10000条记录，每次总共取1000万条记录。1000并发查询，共取100亿条记录，10TB网络带宽。
+4.配置client node。ES on ECS 和 ES on ODPS的集群，client node 均配置5个。client node 重启一遍，清空JVM内存。
+    4.1设置索引不在某些节点 https://www.elastic.co/guide/en/elasticsearch/reference/6.3/allocation-filtering.html
+PUT _cluster/settings
+{
+  "transient" : {
+    "cluster.routing.allocation.exclude._ip" : "10.0.0.1"
+  }
+}
+    4.2从slb摘除data node节点
+https://yuque.antfin-inc.com/search-private-cloud/cdmd7f/cm8vas
+
+5.设置shard_size参数。查询请求可能从超过1000个分片中取结果，如果每个分片取10000条、查询聚合。设置terminal_after
+
+6.写入参数调优。
+调优策略事物日志异步刷新：
+动态设置异步刷新事务日志,iowait 5%  降至0.5%，IOPS 1000降至50
+PUT /tabl_*/_settings
+{
+    "index.translog.durability": "async"
+}
+
+动态设置事务日志大小
+PUT /tabl_*/_settings
+{
+    "translog.flush_threshold_size": "4gb"
+}
+
+设置索引刷新时间间隔
+PUT /tabl_*/_settings
+{
+    "refresh_interval": "120s"
+}
+
+
+设置索引merge大小
+PUT /tabl_*/_settings
+{
+    "merge.policy.max_merged_segment": "256mb"
+}
+
+7.search、bulk队列调大.
+thread_pool.search.size: 64
+thread_pool.search.queue_size:100000
+thread_pool.bulk.queue_size: 5000
+
+8.rest client   设置连接数为500，配置超时时间。
+参考：
+【ElasticSearch RestHighLevelClient 教程（一）通用操作 - paditang的博客 - CSDN博客】https://blog.csdn.net/paditang/article/details/78802799
+
+
+9.精心设计索引字段类型。数值类型字段Mapping配置为数字类型,不用keyword类型。例如：字段TIME、CAPTURE_TIME、MESSAGE_SEND_TIME配置long类型。参考：
+https://www.elastic.co/blog/better-query-planning-for-range-queries-in-elasticsearch
+https://issues.apache.org/jira/browse/LUCENE-7055
+
+10.降低索引膨胀率。原始记录单条0.1k，ES中记录单条0.5-1k，膨胀5-10倍。全文字段_all配置分词器为cjk，业务上有检索意义的字段加入_all,没有检索意义的字段Mapping配置"include_in_all": false。需要参与排序、聚合统计的字段存储DocValue（keyword、number类型字段默认开启），其它字段配置"doc_values": false。参考：https://www.elastic.co/guide/en/elasticsearch/reference/current/doc-values.html
+11.分片数调优。目前的索引分片偏多，按照单个分片大小30GB左右设计索引分片，IM类型每天的索引配置30个分片。
+
+
+12.reindex 从数据源每批取10000条记录，索引设置调优：
+ "index.refresh_interval": "-1",
+ "index.translog.flush_threshold_size": "4g",
+ "index.merge.policy.max_merged_segment":"256mb"
+
+
+
+13.配置熔断参数，避免个别查询占用过多系统资源。
+PUT _cluster/settings
+{
+"persistent": {
+"indices.breaker.fielddata.limit":"30%",
+"indices.breaker.total.limit":"6%",
+"indices.breaker.request.limit":"3%"
+}
+}
+
+14.检索快速返回。查询DSL配置参数terminal_after:100, timeout:10s.  避免查询宽泛条件，几十亿条记录参与排序。避免单个请求超过1000个分片参与检索，通过别名、请求指定索引名查询最近（一周）索引，目前的检索默认查询约3000分片对服务器压力过大。
+
+15.检索请求返回记录条数限制。目前测试取5000、10000条记录对服务器IO、网络压力非常大。测试单次取10、100条记录，翻页时再单独从ES发送检索请求。
+
+16.慢查询条件分析。慢查询DSL配置profile=true看看慢在哪里。
+参考：https://www.elastic.co/guide/en/elasticsearch/reference/5.5/search-profile.html
+GET /_search
+{
+  "profile": true,
+  "query" : {
+    "match" : { "message" : "message number" }
+  }
+}
+
+
+17.测试时从低并发开始测试，避免冷启动。10/20/50/100/200/500并发依次增加，根据服务器CPU使用率和客户端网络带宽来决定是否加压，服务器CPU使用率低、客户端带宽跑满时启用5个客户端并行压测。
