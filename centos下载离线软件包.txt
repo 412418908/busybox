@@ -1,0 +1,14 @@
+4) How to List all files for particular installed RPM package
+sudo rpm -ql GeoIP
+10) How to query all installed package
+sudo rpm -qa
+12) How to query a file that belongs which RPM Package
+sudo rpm -qf /usr/lib64/libGeoIP.so.1.5.0
+
+----------download rpm
+yum reinstall --downloadonly  --downloaddir=. lrzsz
+----------Find which package a special file belongs to
+yum whatprovides 'rz'
+
+----------- if file already exists , find which package the file belongs to (If repoquery command is not available in your system, install yum-utils package.)
+repoquery -f /bin/ls
