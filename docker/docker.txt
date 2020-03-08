@@ -1,0 +1,57 @@
+内网无法联网，因此不能直接运行docker pull命令下载docker镜像，可按下述方法获取docker镜像：
+步骤:
+1. 在可以联网的机子上执行docker pull命令下载镜像，如:sudo docker pull freewil/bitcoin-testnet-box，命令使用参考Docker pull 命令
+2. 然后运行docker save命令将镜像保存为tar归档文件，如：docker save -o bitcoin-testnet-box.tar freewil/bitcoin-testnet-box，命令使用参考Docker save 命令
+3. 将保存的bitcoin-testnet-box.tar归档文件拷贝进内网机子
+4. 内网机子上执行dock load命令加载保存的tar归档文件，如：docker load -i bitcoin-testnet-box.tar
+
+
+------------------------------------------docker postgres
+拉取镜像
+docker Pulling library/postgres
+1
+运行Postgres(映射一个端口)：
+docker run --name postgres1 -e POSTGRES_PASSWORD=password -d -p 5432:5432 postgres
+1
+将容器的端口5432映射到服务器端口5432。 -p< host_port>：< container_port>现在，postgres可以从您的公共服务器ip：5432访问
+
+查看运行状态
+root@ml-sky:~# docker ps -a
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
+abbc0d5b1a15        postgres            "docker-entrypoint.s…"   6 minutes ago       Up 6 minutes        0.0.0.0:5432->5432/tcp   postgres1
+1
+2
+3
+运行postgres数据库，建立数据库
+oot@ml-sky:/home/ml/Desktop# docker exec -it postgres1 bash
+root@abbc0d5b1a15:/# psql -U postgres
+psql (12.0 (Debian 12.0-2.pgdg100+1))
+Type "help" for help.
+
+postgres=# CREATE DATABASE MYTEST;
+CREATE DATABASE
+1
+2
+3
+4
+5
+6
+7
+查看数据库
+
+postgres=# \l
+                                 List of databases
+   Name    |  Owner   | Encoding |  Collate   |   Ctype    |   Access privileges   
+-----------+----------+----------+------------+------------+-----------------------
+ mytest    | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ postgres  | postgres | UTF8     | en_US.utf8 | en_US.utf8 | 
+ template0 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+ template1 | postgres | UTF8     | en_US.utf8 | en_US.utf8 | =c/postgres          +
+           |          |          |            |            | postgres=CTc/postgres
+(4 rows)
+
+postgres=# 
+1
+
+---------------------------------------------------------------------------------
